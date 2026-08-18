@@ -856,7 +856,284 @@ Isso permite comprovar que a infraestrutura provisionada está funcionando corre
 
 ---
 
-## 17. Conclusão
+## 17. Estimativa de custos e aplicação de conceitos FinOps
+
+Além dos aspectos técnicos relacionados ao provisionamento da máquina virtual, também foi realizada uma análise básica de custos utilizando conceitos de **FinOps – Cloud Financial Operations**.
+
+FinOps pode ser entendido como uma abordagem de gestão financeira aplicada à computação em nuvem, buscando equilibrar custo, desempenho e valor entregue pelos recursos utilizados.
+
+Em ambientes de nuvem, a utilização de recursos possui impacto financeiro direto. Dessa forma, a escolha de uma instância não deve considerar apenas sua capacidade computacional, mas também fatores como:
+
+* tempo em que permanecerá ligada;
+* capacidade realmente necessária;
+* armazenamento provisionado;
+* utilização de endereços IP públicos;
+* tráfego de rede;
+* recursos ociosos;
+* serviços adicionais;
+* possibilidade de desligamento após o uso.
+
+Para este laboratório, foi escolhida uma instância `t3.micro`, considerada suficiente para executar um sistema Ubuntu e um servidor Nginx simples.
+
+### 17.1 Custo da instância EC2
+
+Na região `us-east-1`, considerando o modelo de contratação **On-Demand**, uma instância Linux `t3.micro` possui preço aproximado de:
+
+```text
+US$ 0,0104 por hora
+```
+
+Considerando que a instância permanecesse ligada durante 24 horas por dia durante um mês de aproximadamente 730 horas:
+
+```text
+730 × US$ 0,0104
+```
+
+o custo aproximado seria:
+
+```text
+US$ 7,59 por mês
+```
+
+Esse cálculo representa apenas o custo computacional da instância EC2.
+
+A escolha pelo modelo On-Demand é adequada ao laboratório porque não exige compromisso antecipado e permite pagar somente pelo período em que o recurso permanecer em utilização.
+
+Para uma atividade temporária, não existe justificativa para assumir compromissos de longo prazo, como Reserved Instances ou Savings Plans.
+
+### 17.2 Custo de armazenamento
+
+A instância utiliza um volume Amazon EBS para armazenar o sistema operacional e os arquivos da aplicação.
+
+Considerando um volume SSD do tipo `gp3` com 8 GB e um preço de referência aproximado de:
+
+```text
+US$ 0,08 por GB/mês
+```
+
+o custo estimado seria:
+
+```text
+8 GB × US$ 0,08
+```
+
+resultando em aproximadamente:
+
+```text
+US$ 0,64 por mês
+```
+
+A escolha de somente 8 GB de armazenamento também está relacionada ao conceito de **right-sizing**, pois não existe necessidade de provisionar um volume muito maior para uma aplicação de laboratório composta basicamente pelo Ubuntu e pelo Nginx.
+
+Provisionar armazenamento superior à necessidade real aumentaria o custo sem trazer benefício para a atividade.
+
+### 17.3 Custo do endereço IPv4 público
+
+Para que a instância possa ser acessada diretamente pela Internet, foi atribuído um endereço IPv4 público.
+
+A AWS possui cobrança pelo uso de endereços IPv4 públicos.
+
+Considerando o valor aproximado de:
+
+```text
+US$ 0,005 por hora
+```
+
+e uma utilização durante 730 horas mensais:
+
+```text
+730 × US$ 0,005
+```
+
+o custo aproximado seria:
+
+```text
+US$ 3,65 por mês
+```
+
+Esse valor é relevante na análise FinOps porque demonstra que até mesmo recursos aparentemente simples, como um endereço IPv4 público, podem gerar custos quando permanecem provisionados continuamente.
+
+### 17.4 Estimativa mensal básica
+
+Considerando a instância ligada continuamente durante aproximadamente 730 horas, a estimativa seria:
+
+| Recurso              | Estimativa mensal |
+| -------------------- | ----------------: |
+| EC2 `t3.micro`       |          US$ 7,59 |
+| EBS `gp3` – 8 GB     |          US$ 0,64 |
+| IPv4 público         |          US$ 3,65 |
+| **Total aproximado** | **US$ 11,88/mês** |
+
+Esse valor representa uma estimativa básica e não inclui possíveis custos adicionais relacionados a:
+
+* transferência de dados para a Internet;
+* snapshots;
+* backups;
+* serviços de monitoramento adicionais;
+* utilização prolongada de CPU acima da capacidade de baseline;
+* criação de outros recursos AWS;
+* impostos ou variações comerciais aplicáveis à conta.
+
+### 17.5 Custo proporcional ao período do laboratório
+
+Como a atividade é temporária, manter a instância ligada durante um mês inteiro não seria necessário.
+
+Por exemplo, considerando aproximadamente 10 horas de utilização:
+
+```text
+EC2:
+10 × US$ 0,0104 = US$ 0,104
+```
+
+E considerando também o IPv4 público durante essas mesmas 10 horas:
+
+```text
+IPv4:
+10 × US$ 0,005 = US$ 0,05
+```
+
+O custo computacional e de IPv4 seria, portanto, bastante reduzido quando comparado a manter a infraestrutura ligada continuamente.
+
+Esse comportamento demonstra uma das principais vantagens financeiras da computação em nuvem: recursos podem ser provisionados quando necessários e removidos posteriormente.
+
+### 17.6 Free Tier e créditos promocionais
+
+Dependendo da data de criação e das condições da conta AWS utilizada, parte ou a totalidade do laboratório pode ser coberta pelo programa AWS Free Tier ou por créditos promocionais.
+
+Para contas AWS criadas em ou após 15 de julho de 2025, a AWS passou a disponibilizar um modelo baseado em créditos, podendo fornecer créditos iniciais e adicionais para experimentação de serviços durante um período limitado.
+
+Portanto, o custo efetivamente cobrado na conta pode ser inferior à estimativa apresentada ou até mesmo ser integralmente absorvido pelos créditos disponíveis.
+
+Entretanto, do ponto de vista FinOps, é importante realizar a estimativa utilizando os valores normais dos serviços, pois os créditos são temporários e não devem ser considerados como custo permanente da infraestrutura.
+
+### 17.7 Right-sizing
+
+Um dos princípios aplicados no laboratório foi o **right-sizing**, ou dimensionamento adequado dos recursos.
+
+A instância `t3.micro` possui recursos suficientes para:
+
+* executar Ubuntu Server;
+* permitir acesso SSH;
+* executar Nginx;
+* hospedar uma página HTML simples;
+* realizar atualizações do sistema.
+
+Portanto, utilizar uma máquina maior, como `t3.large` ou `t3.xlarge`, representaria superdimensionamento para essa atividade.
+
+O superdimensionamento gera desperdício financeiro porque a cobrança ocorre sobre a capacidade provisionada, mesmo que essa capacidade permaneça ociosa.
+
+A escolha da `t3.micro` busca, portanto, utilizar a menor infraestrutura capaz de atender adequadamente ao requisito.
+
+### 17.8 Instâncias burstable e créditos de CPU
+
+As instâncias da família T3 possuem comportamento do tipo **burstable**.
+
+Isso significa que são projetadas para cargas que normalmente utilizam pouco processamento, mas eventualmente precisam utilizar uma quantidade maior de CPU.
+
+Esse perfil é adequado ao laboratório, pois o servidor Nginx ficará grande parte do tempo com baixa utilização.
+
+Entretanto, instâncias T3 operando em modo Unlimited podem gerar cobrança adicional caso a utilização de CPU permaneça acima do nível baseline por períodos prolongados.
+
+Por isso, em uma aplicação real, uma prática FinOps seria monitorar métricas de CPU e verificar se a família T3 continua sendo economicamente adequada para o padrão de utilização observado.
+
+### 17.9 Recursos ociosos
+
+Um dos principais desperdícios financeiros em ambientes de nuvem ocorre quando recursos permanecem ativos sem necessidade.
+
+Após a conclusão do laboratório, não existe justificativa técnica para manter a máquina EC2 permanentemente ligada.
+
+Uma prática FinOps seria:
+
+```text
+Realizar laboratório
+        ↓
+Validar funcionamento
+        ↓
+Coletar evidências
+        ↓
+Realizar avaliação
+        ↓
+Remover os recursos desnecessários
+```
+
+Caso a instância não seja mais necessária, ela pode ser encerrada.
+
+É importante observar que apenas parar uma instância não necessariamente elimina todos os custos, pois recursos associados, como armazenamento EBS e determinados endereços IP, podem continuar gerando cobrança.
+
+Por isso, ao finalizar definitivamente o laboratório, deve-se avaliar a remoção completa dos recursos que não serão mais utilizados.
+
+### 17.10 Monitoramento financeiro
+
+Outra prática FinOps recomendada é acompanhar os custos através das ferramentas de faturamento da AWS.
+
+Podem ser utilizados recursos como:
+
+* AWS Billing;
+* AWS Cost Explorer;
+* AWS Budgets;
+* alertas de orçamento;
+* relatórios de custo e utilização.
+
+Para uma conta acadêmica ou de laboratório, pode ser criado um orçamento pequeno com alertas, por exemplo:
+
+```text
+Budget mensal: US$ 5,00
+```
+
+com notificações quando o consumo atingir determinados percentuais.
+
+Por exemplo:
+
+```text
+50% → US$ 2,50
+80% → US$ 4,00
+100% → US$ 5,00
+```
+
+Esse tipo de monitoramento reduz o risco de manter acidentalmente recursos ativos e receber cobranças inesperadas.
+
+### 17.11 Tags para gestão de custos
+
+Também é recomendável utilizar **tags** para identificar os recursos provisionados.
+
+Por exemplo:
+
+```text
+Name = lab-ec2-web
+Project = computacao-nuvem-II
+Environment = laboratorio
+Owner = aluno
+```
+
+As tags ajudam a identificar a finalidade dos recursos e podem ser utilizadas para análise e alocação de custos.
+
+Em empresas que possuem centenas ou milhares de recursos AWS, essa organização é fundamental para entender quais equipes, sistemas ou projetos são responsáveis pelos gastos.
+
+### 17.12 Síntese da análise FinOps
+
+As principais decisões relacionadas a FinOps neste laboratório foram:
+
+| Prática                | Aplicação no laboratório                      |
+| ---------------------- | --------------------------------------------- |
+| Right-sizing           | Utilização de uma `t3.micro`                  |
+| Pay-as-you-go          | Utilização do modelo On-Demand                |
+| Armazenamento adequado | Volume EBS pequeno                            |
+| Monitoramento          | Acompanhamento dos custos AWS                 |
+| Controle de IP público | Utilização somente quando necessária          |
+| Recursos temporários   | Encerramento após o laboratório               |
+| Tags                   | Identificação dos recursos                    |
+| Controle orçamentário  | Possibilidade de criação de AWS Budget        |
+| Free Tier              | Aproveitamento de créditos quando disponíveis |
+| Evitar desperdício     | Não manter recursos ociosos                   |
+
+Portanto, sob a perspectiva de FinOps, a infraestrutura escolhida atende ao requisito técnico utilizando recursos pequenos e de baixo custo.
+
+A estimativa de aproximadamente **US$ 11,88 mensais** representa o cenário em que a máquina permanece ligada continuamente durante todo o mês. Como o laboratório possui duração limitada, o custo real tende a ser significativamente menor caso os recursos sejam encerrados após sua utilização.
+
+Essa análise demonstra que boas práticas de computação em nuvem também envolvem decisões financeiras, buscando entregar o resultado necessário com a menor quantidade possível de recursos e evitando desperdícios.
+
+
+## 18. Conclusão
 
 O laboratório permitiu realizar o processo completo de criação, configuração e disponibilização de uma máquina virtual utilizando o Amazon EC2.
 
