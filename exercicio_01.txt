@@ -1,0 +1,7 @@
+# AWS
+	Site: https://awsacademy.instructure.com/login/canvas
+	ID da conta: 093896293396
+	Usuário federado: voclabs/user3116364=Andre_Salerno
+	Nome de usuário: andre.salerno@fatec.sp.gov.br
+	Senha: Sucesso2024!
+	ID instância: i-0a93917d76180c458
